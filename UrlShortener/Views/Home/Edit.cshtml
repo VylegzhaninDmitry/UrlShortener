@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Edit";
+}
+@model UrlModel
+
+<form method="post" asp-action="Edit" asp-route-id="@Model.Id">
+    <div class="mb-3">
+        <label asp-for="LongUrl" class="control-label">Long URL</label>
+        <input type="text" asp-for="LongUrl" class="form-control" width="50%" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="ShortUrl" class="control-label">Short URL</label>
+        <input type="text" asp-for="ShortUrl" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="CreateUrl" class="control-label">Create URL</label>
+        <input type="datetime" asp-for="CreateUrl" class="form-control" readonly />
+    </div>
+    <div class="mb-3">
+        <label asp-for="NumberOfClick" class="control-label">Number of click</label>
+        <input type="datetime" asp-for="NumberOfClick" class="form-control" readonly />
+    </div>
+    <div class="text-center">
+        <input type="submit" value="Edit" class="w-50 btn btn-lg btn-primary" />
+    </div>
+
+</form>
+
+@if (ViewBag.MessageError != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.MessageError
+    </div>
+}
+
+@if (ViewBag.MessageSuccess != null)
+{
+    <div class="alert alert-success" role="alert">
+        @ViewBag.MessageSuccess
+    </div>
+}

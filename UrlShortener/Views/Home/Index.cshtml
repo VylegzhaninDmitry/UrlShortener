@@ -1,0 +1,71 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+@model IEnumerable<UrlModel>
+
+<div class="text-center">
+
+    <h3 class="display-4">Shorting your URL</h3>
+    <br>
+    <form method="post" action="~/Home/Index">
+        <div class="form-floating">
+            <input type="text" class="form-control" id="LongUrl" name="longUrl" placeholder="Enter your url" /> <br />
+            <label for="LongUrl">Enter you URL</label>
+        </div>
+
+        <div>
+            <input type="submit" class="w-50 btn btn-lg btn-primary" value="Shorten" /> <br />
+        </div>
+        @if (ViewBag.MessageError != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                @ViewBag.MessageError
+            </div>
+        }
+        @if (ViewBag.MessageSuccess != null)
+        {
+            <div class="alert alert-success" role="alert">
+                @ViewBag.MessageSuccess
+            </div>
+        }
+
+    </form>
+
+
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Long url</th>
+                <th>Short url</th>
+                <th>Date of create</th>
+                <th>Number of clicking</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><a asp-action="RedirectLongUrl" asp-route-longUrl="@item.LongUrl">@item.LongUrl</a></td>
+                    <td><a asp-action="RedirectShortUrl" asp-route-shortUrl="@item.ShortUrl">@item.ShortUrl</a></td>
+                    <td>@item.CreateUrl</td>
+                    <td>@item.NumberOfClick</td>
+                    <td>
+                        <a asp-action="Edit" class="btn btn btn-primary" asp-route-Id="@item.Id">Edit</a>
+                        <a asp-action="Delete" class="btn btn btn-primary" asp-route-Id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    myModal.addEventListener('shown.bs.modal', () => {
+        myInput.focus()
+    })
+</script>
+
