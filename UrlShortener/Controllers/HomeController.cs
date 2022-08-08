@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using UrlShortener.Utility;
 using UrlShortener.Models;
 using UrlShortener.Repositories;
-using Microsoft.AspNetCore.Rewrite;
+using UrlShortener.Utility;
 
 namespace UrlShortener.Controllers
 {
@@ -61,7 +60,7 @@ namespace UrlShortener.Controllers
                 }
                 else
                 {
-                    ViewBag.MessageError = "Not valid URL.";
+                    ViewBag.MessageError = "Not valid URL. Example : https://example.com";
                     _logger.LogInformation("Index (POST): wrong url");
                     return View(_urlRepository.GetUrls());
                 }
@@ -74,7 +73,20 @@ namespace UrlShortener.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
+            if (id == 0)
+            {
+                _logger.LogInformation($"id-{id}, not found");
+                return NotFound();
+            }
+
             var url = _urlRepository.GetById(id);
+
+            if (url == null)
+            {
+                _logger.LogInformation($"url-{url}, not found");
+                return NotFound();
+            }
+
             _logger.LogInformation("Edit (GET) start success");
             return View(url);
         }
@@ -82,21 +94,31 @@ namespace UrlShortener.Controllers
         [HttpPost]
         public IActionResult Edit(UrlModel url)
         {
-            var a = _urlRepository.GetUrls().Where(x => x.LongUrl == url.LongUrl).Count();
-            var b = _urlRepository.GetUrls().Where(x => x.ShortUrl == url.ShortUrl).Count();
+            var countLongUrl = _urlRepository.GetUrls().Where(x => x.LongUrl == url.LongUrl).Count();
+            var countShortUrl = _urlRepository.GetUrls().Where(x => x.ShortUrl == url.ShortUrl).Count();
+            var c = _urlRepository.GetUrls().First(x => x.Id == url.Id);
 
-
-            if (a == 0 || b == 0)
+            if (countLongUrl == 0 || countShortUrl == 0 && ModelState.IsValid)
             {
-                _urlRepository.UpdateUrl(url);
-                _urlRepository.SaveChanges();
-                ViewBag.MessageSuccess = "Success!";
-                _logger.LogInformation("Edit (POST) success");
-                return RedirectToAction("Edit", "Home", new { url.Id });
+                if (ValidateUrl.IsValidUrl(url.LongUrl) && url.ShortUrl.StartsWith("https://loc.url/"))
+                {
+                    _urlRepository.UpdateUrl(url);
+                    _urlRepository.SaveChanges();
+                    ViewBag.MessageSuccess = "Success!";
+                    _logger.LogInformation("Edit (POST) success");
+                    return RedirectToAction("Edit", "Home", new { url.Id });
+                }
+                else
+                {
+                    ViewBag.MessageError = @"Not valid URL. Example: https://example.com or https://loc.url/token";
+                    _logger.LogInformation("Edit (POST): wrong url");
+                    return View(url);
+                }
+
             }
             else
             {
-                ViewBag.MessageError = "Was use";
+                ViewBag.MessageError = "Already in use!";
                 _logger.LogInformation("Edit (POST): record was use");
                 return View(url);
             }
@@ -104,11 +126,32 @@ namespace UrlShortener.Controllers
 
         public IActionResult Delete(int id)
         {
+            if (id == 0)
+            {
+                _logger.LogInformation($"id-{id}, not found");
+                return NotFound();
+            }
             var url = _urlRepository.GetById(id);
-            _urlRepository.DeleteUrl(url);
-            _urlRepository.SaveChanges();
-            _logger.LogInformation("Delete success");
-            return RedirectToAction("Index", "Home");
+
+            if(url == null)
+            {
+                _logger.LogInformation($"url-{url}, not found");
+                return NotFound();
+            }
+            try
+            {
+                
+                _urlRepository.DeleteUrl(url);
+                _urlRepository.SaveChanges();
+                _logger.LogInformation("Delete success");
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex.Message);
+                return RedirectToAction("Index", "Home");
+            }
+
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
